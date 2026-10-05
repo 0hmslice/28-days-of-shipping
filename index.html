@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>28 Days of Shipping</title>
+<meta name="description" content="A fan-made advent calendar for the Codex team's 28-day sprint. A gift opens when a ship lands. Miss a day and it turns to coal.">
+<meta name="theme-color" content="#0d1222">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='11' width='26' height='18' rx='4' fill='%23ff5a4d'/%3E%3Crect x='14' y='11' width='4' height='18' fill='%23ffffff99'/%3E%3Cpath d='M16 11c-6-8-11-1-4 0M16 11c6-8 11-1 4 0' stroke='%23ffc83d' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
+<link rel="canonical" href="https://0hmslice.github.io/28-days-of-shipping/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="28 Days of Shipping">
+<meta property="og:description" content="A gift opens when a ship lands. Miss a day and it turns to coal. Fan-made 28-day advent calendar.">
+<meta property="og:url" content="https://0hmslice.github.io/28-days-of-shipping/">
+<meta property="og:image" content="https://0hmslice.github.io/28-days-of-shipping/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="28 Days of Shipping">
+<meta name="twitter:description" content="A gift opens when a ship lands. Miss a day and it turns to coal. Fan-made 28-day advent calendar.">
+<meta name="twitter:image" content="https://0hmslice.github.io/28-days-of-shipping/og.png">
+<style>html,body{margin:0;background:#0d1222}</style>
+</head>
+<body>
+<noscript><p style="color:#f4f6ff;font:16px system-ui;padding:24px">28 Days of Shipping needs JavaScript to run.</p></noscript>
+<style>
+/* Concept: a fixed WebGL tunnel. 28 gift boxes spiral away down a garland of lights; scrolling flies the camera through them.
+   Doors open when a post lands. A day that ends with no post turns its gift into smoking coal and snaps the garland. */
+:root {
+  color-scheme: dark;
+  --ink: #0d1222;
+  --ink-2: #151c33;
+  --line: #27315a;
+  --snow: #f4f6ff;
+  --mist: #a3acd0;
+  --tomato: #ff5a4d;
+  --mint: #3ddba8;
+  --sun: #ffc83d;
+  --sky: #5bb5ff;
+  --gum: #ff8ad0;
+  --lime: #b6f04a;
+  --ember: #ff6a1a;
+  --ash: #2a2833;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--ink); scroll-behavior: auto; }
+body { margin: 0; background-color: var(--ink); color: var(--snow); font-family: var(--font-body); font-size: 16px; line-height: 1.5; overflow-x: hidden; }
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; background: radial-gradient(900px 500px at 50% 30%, #1f2a5c, var(--ink)); }
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; }
+main { position: relative; z-index: 2; }
+.gut { padding-inline: 16px; }
+.inner { max-width: 1120px; margin-inline: auto; }
+a { color: var(--sky); text-underline-offset: 3px; }
+a:hover { color: var(--snow); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; border-radius: 8px; }
+
+/* ---------- hero ---------- */
+.hero { min-height: 100vh; min-height: 100svh; display: grid; align-content: space-between; padding-block: 22px 28px; position: relative; }
+.topbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 20px; align-items: center; font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--mist); }
+.topbar .live { display: inline-flex; gap: 8px; align-items: center; }
+.topbar .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); animation: ping 2s infinite; }
+.hero-body { will-change: transform, opacity; padding-block: 40px 0; }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 800; line-height: .8; letter-spacing: -.045em; font-size: clamp(64px, 17.5vw, 260px); font-variation-settings: "wdth" 80; text-transform: uppercase; }
+h1 .ln { display: block; white-space: nowrap; }
+h1 .ch { display: inline-block; opacity: 0; transform: translateY(70%) rotate(8deg); animation: rise .9s cubic-bezier(.2,1.1,.3,1) forwards; text-shadow: 0 .05em 0 rgba(0,0,0,.35); }
+h1 .ch.sp { width: .22em; }
+h1 .sm { font-size: .3em; letter-spacing: -.01em; padding-inline: .2em; vertical-align: .55em; color: var(--ink); background: var(--snow); border-radius: 999px; line-height: 1.5; display: inline-block; transform: rotate(-4deg); text-shadow: none; }
+.sub { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 40px; align-items: end; margin-top: 26px; }
+.sub p { margin: 0; max-width: 46ch; font-size: clamp(17px, 2.2vw, 22px); color: #d7dcf6; text-shadow: 0 2px 18px rgba(8,10,25,.9); }
+.sub p b { color: var(--sun); font-weight: 600; }
+.cue { display: inline-flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--mist); }
+.cue span { width: 26px; height: 42px; border: 2px solid var(--mist); border-radius: 14px; position: relative; }
+.cue span::after { content: ""; position: absolute; left: 50%; top: 7px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--snow); animation: wheel 1.6s infinite; }
+
+/* ---------- journey ---------- */
+.journey { height: 620vh; position: relative; }
+#hud { position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0; transition: opacity .5s; }
+#hud.on { opacity: 1; }
+#hud > * { pointer-events: auto; }
+.hud-week { position: absolute; left: 16px; top: 22px; pointer-events: none; font-family: var(--font-display); font-weight: 800; font-size: clamp(44px, 9vw, 120px); line-height: .85; letter-spacing: -.04em; text-transform: uppercase; color: transparent; -webkit-text-stroke: 2px rgba(244,246,255,.55); }
+.hud-week small { display: block; font-family: var(--font-mono); font-weight: 400; font-size: 12px; letter-spacing: .14em; -webkit-text-stroke: 0; color: var(--mist); margin-top: 10px; }
+.hud-card { position: absolute; left: 16px; bottom: 22px; width: min(420px, calc(100% - 72px)); display: grid; gap: 8px; padding: 18px 20px 20px; border-radius: 26px; background: rgba(13,18,34,.72); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.hud-top { display: flex; align-items: baseline; gap: 14px; }
+.hud-num { font-family: var(--font-display); font-weight: 800; font-size: 76px; line-height: .8; letter-spacing: -.05em; font-variant-numeric: tabular-nums; color: var(--hc, var(--sun)); }
+.chip { display: inline-block; padding: 3px 11px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; background: var(--hc, var(--sun)); color: #1b1230; font-weight: 500; }
+.hud-date { font-family: var(--font-mono); font-size: 12px; color: var(--mist); margin-top: 8px; }
+.hud-title { font-family: var(--font-display); font-size: 22px; line-height: 1.1; font-weight: 700; margin: 0; letter-spacing: -.01em; }
+.hud-sub { margin: 0; color: var(--mist); font-size: 14px; }
+.btn { font-weight: 600; color: var(--ink); background: var(--snow); border: 0; border-radius: 999px; padding: 11px 20px; cursor: pointer; box-shadow: 0 4px 0 #8b94bd; justify-self: start; transition: transform .1s, box-shadow .1s; }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8b94bd; }
+.btn.ghost { background: transparent; color: var(--snow); border: 1px solid var(--line); box-shadow: none; }
+.rail { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: grid; gap: 2px; padding: 8px 6px; border-radius: 999px; background: rgba(13,18,34,.55); border: 1px solid var(--line); backdrop-filter: blur(8px); }
+.rail button { width: 14px; height: calc((100vh - 220px) / 28); min-height: 8px; max-height: 20px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
+.rail button::after { content: ""; position: absolute; left: 3px; right: 3px; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--rc, #3a4478); transition: left .2s, right .2s, height .2s; }
+.rail button.cur::after { left: -4px; right: -4px; height: 6px; background: var(--snow); }
+.hud-prev { position: absolute; right: 44px; bottom: 22px; display: flex; gap: 10px; align-items: center; }
+.tip { position: fixed; z-index: 70; pointer-events: none; padding: 6px 12px; border-radius: 999px; background: var(--snow); color: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 500; transform: translate(14px, 14px); opacity: 0; transition: opacity .15s; white-space: nowrap; }
+.tip.on { opacity: 1; }
+#ring { position: fixed; z-index: 80; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 1.5px solid rgba(244,246,255,.7); border-radius: 50%; pointer-events: none; opacity: 0; transition: width .2s, height .2s, margin .2s, background .2s, opacity .2s; mix-blend-mode: difference; }
+#ring.on { opacity: 1; }
+#ring.big { width: 64px; height: 64px; margin: -32px 0 0 -32px; background: rgba(244,246,255,.25); }
+
+/* ---------- after the flight ---------- */
+.after { position: relative; background: linear-gradient(180deg, rgba(13,18,34,0) 0, var(--ink) 220px); padding-top: 160px; padding-bottom: 56px; }
+.marquee { overflow: hidden; border-block: 1px solid var(--line); background: rgba(21,28,51,.7); transform: rotate(-1.4deg); margin-block: 0 90px; margin-inline: -20px; }
+.marquee div { display: flex; width: max-content; animation: slide 36s linear infinite; }
+.marquee span { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 60px); letter-spacing: -.02em; text-transform: uppercase; padding: 14px 26px; white-space: nowrap; color: var(--snow); }
+.marquee span:nth-child(4n+2) { color: var(--sun); } .marquee span:nth-child(4n+3) { color: var(--mint); } .marquee span:nth-child(4n) { color: var(--ember); }
+.ledger { display: grid; gap: 26px; margin-bottom: 90px; }
+.ledger h2, .index h2, .promise h2.big { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 8vw, 96px); line-height: .9; letter-spacing: -.04em; margin: 0; text-transform: uppercase; }
+.ledger .verdict { font-family: var(--font-mono); color: var(--mist); font-size: 14px; letter-spacing: .06em; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.stat { border-radius: 28px; padding: 22px 24px 26px; display: grid; gap: 4px; min-width: 0; transform: rotate(var(--r, 0deg)); }
+.stat b { font-family: var(--font-display); font-weight: 800; font-size: clamp(56px, 11vw, 140px); line-height: .85; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.stat span { font-weight: 600; }
+.stat.g { background: var(--mint); color: #05281d; --r: -1.2deg; box-shadow: 0 10px 0 #1c9d77; }
+.stat.c { background: #1a1219; color: #ff9b57; border: 2px solid rgba(255,106,26,.5); --r: 1deg; box-shadow: 0 10px 0 #000, 0 0 40px rgba(255,106,26,.25); }
+.stat.s { background: var(--sun); color: #2a1d00; --r: -.6deg; box-shadow: 0 10px 0 #b27d00; }
+.pips { display: grid; grid-template-columns: repeat(28, 1fr); gap: 4px; }
+.pips i { height: 12px; border-radius: 6px; background: #1c2447; }
+.pips i.g { background: var(--mint); } .pips i.c { background: var(--ember); box-shadow: 0 0 10px rgba(255,106,26,.6); } .pips i.w { background: var(--sun); animation: pulse 1.4s infinite; }
+.clock { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.clock .lbl { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mist); flex: 1 1 100%; }
+.clock .u { display: grid; justify-items: center; gap: 2px; min-width: 70px; padding: 10px 12px; border-radius: 16px; background: #0b1026; border: 1px solid var(--line); }
+.clock .u b { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 6vw, 44px); line-height: 1; font-variant-numeric: tabular-nums; }
+.clock .u i { font-style: normal; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mist); }
+
+.promise { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; margin-bottom: 90px; }
+.card { background: var(--ink-2); border: 1px solid var(--line); border-radius: 28px; padding: 24px; min-width: 0; }
+.card h3 { font-family: var(--font-display); font-size: 26px; letter-spacing: -.015em; margin: 0 0 10px; }
+.card p { margin: 0 0 12px; color: var(--mist); max-width: 60ch; }
+.card p:last-child { margin-bottom: 0; }
+.who { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; background: conic-gradient(from 200deg, var(--sky), var(--mint), var(--sun), var(--gum), var(--sky)); display: grid; place-items: center; color: var(--ink); font-family: var(--font-display); font-weight: 800; }
+.who small { display: block; color: var(--mist); font-family: var(--font-mono); font-size: 12px; }
+.rules { display: grid; gap: 14px; padding: 0; margin: 0; list-style: none; }
+.rules li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start; color: var(--mist); }
+.rules li b { color: var(--snow); font-weight: 600; }
+.rules svg { width: 38px; height: 38px; }
+
+.index .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 28px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.week { margin-bottom: 38px; }
+.week h4 { font-family: var(--font-mono); font-weight: 500; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--mist); margin: 0 0 14px; display: flex; gap: 12px; align-items: center; }
+.week h4::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 14px; perspective: 1400px; }
+
+.door { --c: var(--tomato); --c2: #c9372c; position: relative; aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; min-width: 0; transform-style: preserve-3d; transition: transform .25s, opacity .6s; }
+.door.pre { opacity: 0; transform: translateY(40px) scale(.9); }
+.door .inside { position: absolute; inset: 0; border-radius: 18px; padding: 10px; display: grid; align-content: end; gap: 4px; text-align: left; background: radial-gradient(circle at 50% 30%, #fff 0%, #ffffff00 55%), var(--c); color: #1b1230; box-shadow: inset 0 0 0 3px rgba(0,0,0,.12); }
+.door .inside small { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+.door .inside strong { font-family: var(--font-display); font-weight: 700; font-size: clamp(11px, 1.5vw, 15px); line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.door .front { position: absolute; inset: 0; border-radius: 18px; transform-origin: left center; transition: transform .9s cubic-bezier(.2,.9,.25,1.15), filter .3s; background: linear-gradient(160deg, var(--c), var(--c2)); box-shadow: 0 8px 0 rgba(0,0,0,.28), inset 0 2px 0 rgba(255,255,255,.35); overflow: hidden; backface-visibility: hidden; }
+.door .front::before, .door .front::after { content: ""; position: absolute; background: rgba(255,255,255,.34); }
+.door .front::before { left: 50%; top: 0; bottom: 0; width: 14%; transform: translateX(-50%); }
+.door .front::after { top: 50%; left: 0; right: 0; height: 14%; transform: translateY(-50%); }
+.door .num { position: absolute; inset: 0; margin: auto; width: 56%; height: 56%; border-radius: 50%; display: grid; place-items: center; z-index: 2; background: var(--snow); color: var(--ink); font-family: var(--font-display); font-weight: 800; font-size: clamp(20px, 3.4vw, 38px); box-shadow: 0 4px 0 rgba(0,0,0,.22); font-variant-numeric: tabular-nums; }
+.door .tag { position: absolute; left: 8px; right: 8px; bottom: 7px; z-index: 3; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.92); text-shadow: 0 1px 0 rgba(0,0,0,.3); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.door .lock { position: absolute; top: 7px; right: 7px; z-index: 3; width: 18px; height: 18px; }
+.st-sealed .front { filter: saturate(.45) brightness(.62); }
+.st-gift .front { transform: rotateY(-112deg); }
+.st-gift:hover .front { transform: rotateY(-100deg); }
+.st-sealed:hover .front, .st-waiting:hover .front { transform: rotateY(-12deg); }
+.st-waiting .front { animation: wiggle 3.2s infinite, glow 2.2s infinite; }
+.st-sealed:hover .front { animation: shake .4s; }
+.door .badge { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); z-index: 4; background: var(--snow); color: var(--ink); font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .12em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.st-coal .front { background: radial-gradient(120% 90% at 50% 110%, #5a2208 0%, #1a1219 55%, #121118 100%); box-shadow: 0 8px 0 rgba(0,0,0,.4), inset 0 0 0 2px rgba(255,106,26,.28), 0 0 30px rgba(255,106,26,.2); }
+.st-coal .front::before, .st-coal .front::after { display: none; }
+.st-coal .num { inset: auto auto 8px 8px; margin: 0; width: 30%; height: auto; aspect-ratio: 1; background: var(--ash); color: #ff9b57; font-size: clamp(11px, 1.7vw, 18px); box-shadow: none; }
+.st-coal .tag { text-align: right; left: 38%; color: #ff9b57; }
+.st-coal:hover .front { transform: rotate(-2deg) scale(1.03); }
+.coalart { display: none; position: absolute; inset: 0; }
+.st-coal .coalart { display: block; }
+.coalart svg { position: absolute; left: 6%; top: 4%; width: 88%; height: 74%; filter: drop-shadow(0 0 7px rgba(255,106,26,.6)); }
+.crack { stroke: #ff7a22; stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; animation: ember 2.4s infinite; }
+.puff { position: absolute; left: 44%; bottom: 42%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: rgba(175,170,190,.4); filter: blur(4px); animation: smoke 3.4s infinite; opacity: 0; }
+.puff:nth-child(2) { left: 28%; animation-delay: 1.1s; } .puff:nth-child(3) { left: 58%; animation-delay: 2.2s; }
+.c0 { --c: var(--tomato); --c2: #c9372c; } .c1 { --c: var(--mint); --c2: #1c9d77; } .c2 { --c: var(--sun); --c2: #d19400; }
+.c3 { --c: var(--sky); --c2: #2d78c4; } .c4 { --c: var(--gum); --c2: #d04da0; } .c5 { --c: var(--lime); --c2: #7fb21e; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 16px 28px; justify-content: space-between; align-items: center; color: var(--mist); font-size: 14px; border-top: 1px solid var(--line); padding-top: 22px; margin-top: 30px; }
+.foot p { margin: 0; max-width: 62ch; }
+.follow { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.follow a { font-family: var(--font-mono); font-size: 13px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; color: var(--snow); }
+.follow a:hover { border-color: var(--sky); }
+.demo-flag { position: fixed; z-index: 50; top: 14px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: var(--sun); color: #2a1d00; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 4px 0 #b27d00; }
+
+/* ---------- modal ---------- */
+.scrim { position: fixed; inset: 0; z-index: 90; background: rgba(6,9,22,.72); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.scrim.on { opacity: 1; pointer-events: auto; }
+.sheet { --c: var(--sun); width: min(560px, 100%); max-height: calc(100% - 16px); overflow: auto; background: var(--ink-2); border: 1px solid var(--line); border-radius: 28px; padding: 26px; position: relative; transform: translateY(24px) scale(.94); transition: transform .45s cubic-bezier(.2,1.2,.3,1); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+.scrim.on .sheet { transform: none; }
+.sheet::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 10px; background: var(--c); border-radius: 28px 28px 0 0; }
+.sheet.coal { background: #14111a; border-color: rgba(255,106,26,.5); box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 80px rgba(255,106,26,.25); }
+.sheet .big { font-family: var(--font-display); font-weight: 800; font-size: 72px; line-height: 1; color: var(--c); letter-spacing: -.04em; }
+.sheet .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-block: 6px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--c); color: #1b1230; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.sheet h3 { font-family: var(--font-display); font-size: clamp(26px, 5vw, 36px); line-height: 1.05; letter-spacing: -.015em; margin: 0 0 10px; text-wrap: balance; }
+.sheet p { margin: 0 0 14px; color: #c9d0ee; }
+.sheet .src { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; }
+.close { position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #0b1026; color: var(--snow); font-size: 20px; cursor: pointer; }
+.close:hover { background: var(--line); }
+.sample { margin-top: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--sun); border: 1px dashed var(--sun); border-radius: 12px; padding: 8px 12px; }
+
+@keyframes ping { 70% { box-shadow: 0 0 0 10px rgba(61,219,168,0); } 100% { box-shadow: 0 0 0 0 rgba(61,219,168,0); } }
+@keyframes pulse { 50% { opacity: .45; } }
+@keyframes rise { to { opacity: 1; transform: none; } }
+@keyframes wheel { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(14px); } }
+@keyframes slide { to { transform: translateX(-50%); } }
+@keyframes wiggle { 0%, 82%, 100% { transform: rotate(0); } 86% { transform: rotate(-3deg); } 90% { transform: rotate(3deg); } 94% { transform: rotate(-2deg); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 8px 0 rgba(0,0,0,.28), 0 0 0 0 rgba(255,200,61,0); } 50% { box-shadow: 0 8px 0 rgba(0,0,0,.28), 0 0 34px 6px rgba(255,200,61,.55); } }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes ember { 0%, 100% { opacity: .55; } 40% { opacity: 1; } 70% { opacity: .7; } }
+@keyframes smoke { 0% { transform: translateY(0) scale(.4); opacity: 0; } 20% { opacity: .7; } 100% { transform: translateY(-160%) scale(1.7); opacity: 0; } }
+
+@media (max-width: 820px) {
+  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .promise { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .stat { transform: none; }
+}
+@media (max-width: 560px) {
+  .hud-card { width: calc(100% - 56px); padding: 14px 16px 16px; }
+  .hud-num { font-size: 56px; }
+  .hud-title { font-size: 18px; }
+  .hud-prev { display: none; }
+  .grid { gap: 9px; }
+  .door .tag, .door .lock { display: none; }
+  .st-coal .tag { display: none; }
+  .door .front, .door .inside { border-radius: 14px; }
+  .door .inside { padding: 7px; }
+  .door .inside small { display: none; }
+  .sheet { padding: 22px 18px; }
+  .pips { gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  h1 .ch { opacity: 1; transform: none; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,600..800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3846"/><stop offset="1" stop-color="#0e0d13"/></linearGradient>
+</defs></svg>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="tip" id="tip"></div>
+<div id="ring"></div>
+<div class="demo-flag" id="demoFlag" hidden>Preview mode · sample data, not real news</div>
+
+<div id="hud" aria-label="Flight controls">
+  <div class="hud-week" id="hudWeek"></div>
+  <div class="hud-card" id="hudCard">
+    <div class="hud-top"><div class="hud-num" id="hudNum">01</div><div><span class="chip" id="hudChip"></span><div class="hud-date" id="hudDate"></div></div></div>
+    <h2 class="hud-title" id="hudTitle"></h2>
+    <p class="hud-sub" id="hudSub"></p>
+    <button class="btn" id="hudBtn" type="button">Open</button>
+  </div>
+  <div class="rail" id="rail" role="group" aria-label="Jump to a day"></div>
+</div>
+
+<main>
+  <header class="hero gut">
+    <div class="topbar inner" style="width:100%">
+      <span class="live"><i></i>Fan-made tracker for the Codex team's 28-day sprint</span>
+      <span id="stamp"></span>
+    </div>
+    <div class="hero-body inner" id="heroBody" style="width:100%">
+      <h1 id="h1" aria-label="28 days of shipping"></h1>
+      <div class="sub">
+        <p>One gift a day, or a full reset. Doors open when the post lands. <b>Miss a day and it turns to coal.</b></p>
+        <div class="cue"><span></span>Scroll to fly in</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="journey" id="journey" aria-label="Fly through the calendar"></section>
+
+  <div class="after gut">
+    <div class="marquee" aria-hidden="true"><div id="marq"></div></div>
+
+    <div class="inner">
+      <section class="ledger" aria-label="Scoreboard">
+        <h2>The ledger</h2>
+        <div class="verdict" id="verdict"></div>
+        <div class="stats">
+          <div class="stat g"><b id="sG">0</b><span>Gifts shipped</span></div>
+          <div class="stat c"><b id="sC">0</b><span>Lumps of coal</span></div>
+          <div class="stat s"><b id="sS">0</b><span>Day streak</span></div>
+        </div>
+        <div class="pips" id="pips" aria-hidden="true"></div>
+        <div class="clock" id="clockBox"><div class="lbl" id="clockLbl"></div><div id="clock" style="display:flex;gap:10px;flex-wrap:wrap"></div></div>
+      </section>
+
+      <section class="promise" aria-label="The announcement">
+        <div class="card">
+          <div class="who"><div class="avatar">T</div><div><strong>Tibo</strong> <small>@thsottiaux · Oct 4, 2026</small></div></div>
+          <h3>The promise</h3>
+          <p>The day before, Tibo wrote that the team is locking in. Work is limited to simplifications, more efficiency for more usage, groundbreaking features and new models, because feedback says people want things simpler.</p>
+          <p>Then came the 28-day commitment: each day, ship one clear improvement relevant for most Codex and work users, or ship a full reset.</p>
+          <p><a href="https://x.com/thsottiaux/status/2106845241357824205" target="_blank" rel="noopener">Read the original post on X</a></p>
+        </div>
+        <div class="card">
+          <h3>The rules of this calendar</h3>
+          <ul class="rules">
+            <li><svg viewBox="0 0 38 38" aria-hidden="true"><rect x="3" y="10" width="32" height="25" rx="7" fill="#3ddba8"/><rect x="17" y="10" width="4" height="25" fill="#ffffff66"/><rect x="3" y="20" width="32" height="4" fill="#ffffff66"/><path d="M19 10c-7-9-14 0-6 1M19 10c7-9 14 0 6 1" stroke="#ffc83d" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span><b>A post opens the door.</b> When Tibo or an OpenAI account posts that day's ship, the gift unwraps with a link to the post.</span></li>
+            <li><svg viewBox="0 0 38 38" aria-hidden="true"><polygon points="5,28 10,14 20,9 30,15 33,28 19,34" fill="#2a2833" stroke="#ff6a1a" stroke-width="2"/><path d="M14 20l5 4-2 6" stroke="#ff6a1a" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg><span><b>A silent day gets coal.</b> If a day ends in Pacific time with no post, its gift turns to coal and the garland goes dark.</span></li>
+            <li><svg viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="15" fill="#ffc83d"/><path d="M19 9v10l7 4" stroke="#0d1222" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><span><b>Day 1 is Oct 5, day 28 is Nov 1.</b> Each day runs midnight to midnight Pacific. A full reset counts as a gift.</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="index" aria-label="All doors">
+        <div class="head">
+          <h2>Every door</h2>
+          <div class="legend">
+            <span><i style="background:var(--mint)"></i>Shipped</span>
+            <span><i style="background:var(--sun)"></i>Waiting</span>
+            <span><i style="background:#566099"></i>Sealed</span>
+            <span><i style="background:var(--ember)"></i>Coal</span>
+          </div>
+        </div>
+        <div id="weeks"></div>
+      </section>
+
+      <footer class="foot">
+        <div>
+          <p>An unofficial fan project, not made by or affiliated with OpenAI. Entries come from public posts by Tibo and OpenAI accounts and link to their source. If a ship was missed, it gets corrected.</p>
+          <div class="follow">
+            <a href="https://x.com/thsottiaux" target="_blank" rel="noopener">@thsottiaux</a>
+            <a href="https://x.com/OpenAI" target="_blank" rel="noopener">@OpenAI</a>
+            <a href="https://x.com/OpenAIDevs" target="_blank" rel="noopener">@OpenAIDevs</a>
+          </div>
+        </div>
+        <button class="btn ghost" id="demoBtn" type="button">Preview with sample data</button>
+      </footer>
+    </div>
+  </div>
+</main>
+
+<div class="scrim" id="scrim" aria-hidden="true">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle" tabindex="-1">
+    <button class="close" id="close" type="button" aria-label="Close">&times;</button>
+    <div class="big" id="sNum"></div>
+    <div class="meta"><span class="pill" id="sKind"></span><span id="sDate"></span></div>
+    <h3 id="sTitle"></h3>
+    <p id="sBody"></p>
+    <a class="src" id="sSrc" target="_blank" rel="noopener" hidden></a>
+    <div class="sample" id="sSample" hidden>Sample data. This is not real news.</div>
+  </div>
+</div>
+
+<script>
+/* ---------- DATA: add one entry per day number when the post lands. ----------
+   kind: "improvement" | "reset" | "model" | "feature" | "simplification"
+   source: { label, url } pointing at the real post.
+   Days are Pacific time: offsetHours 7 = PDT midnight in UTC. Day 28 ends at finalEndUTC (PST). */
+var CALENDAR = {
+  start: "2026-10-05",
+  offsetHours: 7,
+  finalEndUTC: Date.UTC(2026, 10, 2, 8),
+  updatedAt: "2026-10-04",
+  entries: {
+    /* "1": { kind: "improvement", title: "...", summary: "...", source: { label: "@thsottiaux on X", url: "https://x.com/..." } } */
+  }
+};
+/* ---------------------------------------------------------------------------------------- */
+
+(function () {
+  var TOTAL = 28;
+  var C = CALENDAR;
+  var sp = C.start.split("-").map(Number);
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var KIND = { improvement: "Improvement", reset: "Full reset", model: "New model", feature: "New feature", simplification: "Simplification" };
+  var HEX = ["#ff5a4d", "#3ddba8", "#ffc83d", "#5bb5ff", "#ff8ad0", "#b6f04a"];
+  var COALLINES = [
+    "No post, no present. This door closed with nothing in it.",
+    "Santa checked every feed twice. Just a lump of coal.",
+    "The elves are said to be investigating.",
+    "A stocking full of silence.",
+    "All quiet on the timeline.",
+    "Better luck tomorrow. The coal burns anyway."
+  ];
+
+  /* ----- time: days run midnight to midnight Pacific ----- */
+  function dayStart(n) { return Date.UTC(sp[0], sp[1] - 1, sp[2] + n - 1, C.offsetHours, 0, 0); }
+  function dayEnd(n) { return n < TOTAL ? dayStart(n + 1) : C.finalEndUTC; }
+  function fmtPT(ms, o) { return new Intl.DateTimeFormat("en-US", Object.assign({ timeZone: "America/Los_Angeles" }, o)).format(ms); }
+  function dayLabel(n, o) { return fmtPT(dayStart(n) + 43200000, o || { month: "short", day: "numeric" }); }
+  function colorIdx(n) { return (n + Math.floor((n - 1) / 7) * 2) % 6; }
+
+  /* ----- state ----- */
+  var demo = false;
+  var DK = ["improvement", "feature", "simplification", "model", "reset"];
+  var DEMO_COAL = { 6: 1, 13: 1, 17: 1 }, DEMO_TODAY = 21;
+  function entryOf(n) {
+    if (demo) { if (n < DEMO_TODAY && !DEMO_COAL[n]) return { kind: DK[n % 5], title: "Sample ship for day " + n, summary: "Sample entry. A real door shows a short summary of what shipped and links to the original post on X.", source: { label: "Original post", url: "https://x.com/thsottiaux" } }; return null; }
+    return C.entries[n] || null;
+  }
+  function statusOf(n) {
+    if (entryOf(n)) return "gift";
+    if (demo) return n < DEMO_TODAY ? "coal" : n === DEMO_TODAY ? "waiting" : "sealed";
+    var now = Date.now();
+    if (now < dayStart(n)) return "sealed";
+    if (now < dayEnd(n)) return "waiting";
+    return "coal";
+  }
+  var ST = [];
+  function recompute() { for (var n = 1; n <= TOTAL; n++) ST[n] = statusOf(n); }
+
+  /* ----- hero headline ----- */
+  (function () {
+    var h = $("h1"), lines = [["28", " ", "DAYS"], ["OF"], ["SHIPPING"]], i = 0, pal = [HEX[1], HEX[2], HEX[0], HEX[3], HEX[4], HEX[5], HEX[1], HEX[2]];
+    ["28 DAYS", "OF SHIPPING"].forEach(function (txt, li) {
+      var ln = document.createElement("span"); ln.className = "ln";
+      if (li === 1) { var sm = document.createElement("span"); sm.className = "sm"; sm.textContent = "OF"; ln.appendChild(sm); }
+      var t = li === 1 ? "SHIPPING" : txt;
+      for (var k = 0; k < t.length; k++) {
+        var s = document.createElement("span"); s.className = "ch" + (t[k] === " " ? " sp" : ""); s.textContent = t[k] === " " ? " " : t[k];
+        s.style.animationDelay = (reduce ? 0 : 150 + i * 55) + "ms";
+        s.style.color = li === 0 && k < 2 ? "var(--sun)" : li === 0 ? "var(--snow)" : pal[k % pal.length];
+        ln.appendChild(s); i++;
+      }
+      h.appendChild(ln);
+    });
+  })();
+  try { $("stamp").textContent = "Updated " + fmtPT(new Date(C.updatedAt + "T12:00:00Z").getTime(), { month: "short", day: "numeric" }) + " · Pacific time"; } catch (e) {}
+  $("marq").innerHTML = (function () { var w = ["One ship a day", "Full reset", "Simpler", "More usage per dollar", "New models", "Groundbreaking features", "Or coal"], s = ""; for (var r = 0; r < 4; r++) w.forEach(function (x) { s += "<span>" + x + "</span><span>✦</span>"; }); return s; })();
+
+  /* ----- 2D index ----- */
+  var lockSvg = '<svg class="lock" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="8" width="12" height="9" rx="2.5" fill="#fff"/><path d="M6 8V6a3 3 0 016 0v2" stroke="#fff" stroke-width="2" fill="none"/></svg>';
+  var coalArt = '<span class="coalart"><svg viewBox="0 0 100 80" aria-hidden="true"><polygon points="8,62 18,34 40,26 62,36 66,60 38,72" fill="url(#cg)" stroke="#000" stroke-opacity=".5"/><polygon points="58,64 66,46 82,44 94,62 78,74" fill="url(#cg)" stroke="#000" stroke-opacity=".5"/><polygon points="30,40 40,18 58,24 56,42" fill="url(#cg)" stroke="#000" stroke-opacity=".5"/><polyline class="crack" points="22,50 32,54 28,64"/><polyline class="crack" points="46,38 52,46 48,56"/><polyline class="crack" points="70,52 76,58"/></svg><span class="puff"></span><span class="puff"></span><span class="puff"></span></span>';
+  var weeksEl = $("weeks"), doors = [], pips = $("pips");
+  for (var w = 0; w < 4; w++) {
+    var wk = document.createElement("div"); wk.className = "week";
+    wk.innerHTML = "<h4>Week " + (w + 1) + " · " + dayLabel(w * 7 + 1) + " to " + dayLabel(w * 7 + 7) + '</h4><div class="grid"></div>';
+    weeksEl.appendChild(wk);
+    for (var k = 1; k <= 7; k++) {
+      var n = w * 7 + k, b = document.createElement("button");
+      b.type = "button"; b.dataset.n = n; b.className = "door pre";
+      b.innerHTML = '<span class="inside"></span><span class="front"><span class="num">' + n + '</span><span class="tag"></span>' + coalArt + "</span>";
+      wk.querySelector(".grid").appendChild(b);
+      var pp = document.createElement("i"); pips.appendChild(pp);
+      doors.push({ n: n, el: b, pip: pp });
+    }
+  }
+  var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { var d = e.target; setTimeout(function () { d.classList.remove("pre"); }, (+d.dataset.n % 7) * 70); io.unobserve(d); } }); }, { rootMargin: "0px 0px -8% 0px" }) : null;
+  doors.forEach(function (d) { if (io) io.observe(d.el); else d.el.classList.remove("pre"); });
+  setTimeout(function () { doors.forEach(function (d) { d.el.classList.remove("pre"); }); }, 6000);
+
+  function render2D() {
+    doors.forEach(function (d) {
+      var s = ST[d.n], e = entryOf(d.n), front = d.el.querySelector(".front"), tag = d.el.querySelector(".tag"), ins = d.el.querySelector(".inside");
+      var keepPre = d.el.classList.contains("pre");
+      d.el.className = "door c" + colorIdx(d.n) + " st-" + s + (keepPre ? " pre" : "");
+      front.querySelectorAll(".lock").forEach(function (x) { x.remove(); });
+      d.el.querySelectorAll(".badge").forEach(function (x) { x.remove(); });
+      if (s === "sealed") { front.insertAdjacentHTML("beforeend", lockSvg); tag.textContent = dayLabel(d.n); }
+      else if (s === "waiting") { tag.textContent = "Waiting"; d.el.insertAdjacentHTML("beforeend", '<span class="badge">TODAY</span>'); }
+      else if (s === "gift") tag.textContent = "Shipped";
+      else tag.textContent = "Coal";
+      if (e) { ins.innerHTML = "<small>" + (KIND[e.kind] || "Ship") + "</small><strong></strong>"; ins.querySelector("strong").textContent = e.title; } else ins.innerHTML = "";
+      d.el.setAttribute("aria-label", "Day " + d.n + ", " + ({ sealed: "sealed, window opens " + dayLabel(d.n), waiting: "waiting for today's post", gift: "shipped: " + (e && e.title), coal: "coal, nothing shipped" })[s]);
+      d.pip.className = s === "gift" ? "g" : s === "coal" ? "c" : s === "waiting" ? "w" : "";
+    });
+  }
+
+  /* tilt on hover */
+  document.addEventListener("pointermove", function (ev) {
+    var t = ev.target.closest && ev.target.closest(".door");
+    if (!t || reduce || ev.pointerType === "touch") return;
+    var r = t.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width - .5, y = (ev.clientY - r.top) / r.height - .5;
+    t.style.transform = "perspective(500px) rotateX(" + (-y * 14).toFixed(1) + "deg) rotateY(" + (x * 14).toFixed(1) + "deg) translateZ(8px)";
+  });
+  document.addEventListener("pointerout", function (ev) { var t = ev.target.closest && ev.target.closest(".door"); if (t) t.style.transform = ""; });
+
+  /* ----- scoreboard + clock ----- */
+  function ledger() {
+    var g = 0, c = 0, streak = 0, run = 0;
+    for (var n = 1; n <= TOTAL; n++) { var s = ST[n]; if (s === "gift") { g++; run++; } else if (s === "coal") { c++; run = 0; } }
+    streak = run;
+    count($("sG"), g); count($("sC"), c); count($("sS"), streak);
+    var v = g + c === 0 ? "No verdict yet. The first window opens soon." : c === 0 ? "Nice list so far. Every day shipped." : c >= g ? "Naughty list. The coal is piling up." : "Mostly nice, with " + c + (c === 1 ? " lump" : " lumps") + " of coal on the shelf.";
+    $("verdict").textContent = v;
+  }
+  var shown = {};
+  function count(el, to) {
+    var from = shown[el.id] || 0; shown[el.id] = to;
+    if (reduce || from === to) { el.textContent = to; return; }
+    var t0 = performance.now();
+    (function step(t) { var k = clamp((t - t0) / 700, 0, 1); el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); })(t0);
+  }
+  function tick() {
+    var now = Date.now(), target = 0, label = "";
+    if (now < dayStart(1)) { target = dayStart(1); label = "Day 1 window opens in"; }
+    else if (now >= dayEnd(TOTAL)) { label = "Calendar complete"; }
+    else {
+      var d = 1; for (var n = 1; n <= TOTAL; n++) if (now >= dayStart(n)) d = n;
+      if (entryOf(d)) { target = dayEnd(d); label = "Day " + d + " is in the bag. Day " + (d + 1) + " window opens in"; if (d === TOTAL) label = "Day 28 is in the bag. The calendar closes in"; }
+      else { target = dayEnd(d); label = "Day " + d + " closes in. Ship it or it turns to coal."; }
+    }
+    $("clockLbl").textContent = label;
+    if (!target) { $("clock").innerHTML = ""; return; }
+    var s = Math.max(0, Math.floor((target - now) / 1000));
+    var p = [[Math.floor(s / 86400), "days"], [Math.floor(s % 86400 / 3600), "hrs"], [Math.floor(s % 3600 / 60), "min"], [s % 60, "sec"]];
+    $("clock").innerHTML = p.map(function (x) { return '<div class="u"><b>' + String(x[0]).padStart(2, "0") + "</b><i>" + x[1] + "</i></div>"; }).join("");
+  }
+
+  /* ----- modal ----- */
+  var scrim = $("scrim"), sheet = $("sheet"), lastFocus = null;
+  function human(ms) { var s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d > 0 ? d + " day" + (d > 1 ? "s" : "") + " " + h + " hr" : h + " hr " + m + " min"; }
+  function openDoor(n) {
+    var s = ST[n], e = entryOf(n), date = dayLabel(n, { weekday: "long", month: "long", day: "numeric" }), o = { num: n, color: "c" + colorIdx(n), date: date, sample: demo, confetti: false, coal: false };
+    if (s === "gift") { o.kind = KIND[e.kind] || "Ship"; o.title = e.title; o.body = e.summary; o.src = e.source; o.confetti = true; }
+    else if (s === "coal") { o.coal = true; o.kind = "No ship"; o.title = "Coal."; o.body = COALLINES[n % COALLINES.length] + " The window closed " + dayLabel(n, { month: "short", day: "numeric" }) + " at 11:59 pm Pacific with no post."; o.smoke = true; }
+    else if (s === "waiting") { o.kind = "Waiting"; o.title = "Still wrapped"; o.body = "Nothing posted yet today. This door unwraps the moment the ship lands, and it turns to coal at midnight Pacific if it doesn't."; }
+    else { o.kind = "Sealed"; o.title = "Not yet"; o.body = "This window opens in " + human(dayStart(n) - Date.now()) + ". A post that day unwraps the door."; }
+    lastFocus = document.activeElement;
+    sheet.className = "sheet " + o.color + (o.coal ? " coal" : "");
+    if (o.coal) sheet.style.setProperty("--c", "#ff6a1a"); else sheet.style.removeProperty("--c");
+    $("sNum").textContent = o.num; $("sKind").textContent = o.kind; $("sDate").textContent = o.date; $("sTitle").textContent = o.title; $("sBody").textContent = o.body;
+    var a = $("sSrc"); if (o.src) { a.hidden = false; a.href = o.src.url; a.textContent = (o.src.label || "Source") + " ↗"; } else a.hidden = true;
+    $("sSample").hidden = !o.sample;
+    scrim.classList.add("on"); scrim.setAttribute("aria-hidden", "false"); sheet.focus();
+    if (o.confetti) burst(false); else if (o.coal) burst(true);
+  }
+  function hide() { scrim.classList.remove("on"); scrim.setAttribute("aria-hidden", "true"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
+  $("close").addEventListener("click", hide);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) hide(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") hide(); });
+  $("weeks").addEventListener("click", function (ev) { var b = ev.target.closest(".door"); if (b) openDoor(+b.dataset.n); });
+
+  /* ----- confetti / ash ----- */
+  var fx = $("fx"), fc = fx.getContext("2d"), bits = [], fraf = 0;
+  function fxSize() { fx.width = innerWidth * devicePixelRatio; fx.height = innerHeight * devicePixelRatio; }
+  fxSize(); addEventListener("resize", fxSize);
+  function burst(ash) {
+    if (reduce) return;
+    var cols = ash ? ["#ff6a1a", "#ffb04a", "#5a5a66", "#2a2833", "#ff3b0a"] : HEX, dpr = devicePixelRatio;
+    for (var i = 0; i < (ash ? 90 : 170); i++) {
+      var a = Math.random() * 6.283, v = (ash ? 2 + Math.random() * 6 : 6 + Math.random() * 13);
+      bits.push({ x: fx.width / 2, y: fx.height * .4, vx: Math.cos(a) * v * dpr, vy: (Math.sin(a) * v - (ash ? 7 : 6)) * dpr, r: (3 + Math.random() * 6) * dpr, rot: Math.random() * 6, vr: (Math.random() - .5) * .4, c: cols[i % cols.length], life: 1, sq: !ash && Math.random() < .5, g: ash ? -.06 : .32 });
+    }
+    if (!fraf) fraf = requestAnimationFrame(floop);
+  }
+  function floop() {
+    fc.clearRect(0, 0, fx.width, fx.height);
+    bits = bits.filter(function (p) { return p.life > 0 && p.y < fx.height + 40 && p.y > -60; });
+    bits.forEach(function (p) {
+      p.vy += p.g * devicePixelRatio; if (p.g < 0) p.vy *= .97; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= p.g < 0 ? .011 : .0065;
+      fc.save(); fc.translate(p.x, p.y); fc.rotate(p.rot); fc.globalAlpha = clamp(p.life * 2, 0, 1); fc.fillStyle = p.c;
+      if (p.sq) fc.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); else { fc.beginPath(); fc.arc(0, 0, p.r / 2.5, 0, 6.3); fc.fill(); }
+      fc.restore();
+    });
+    fraf = bits.length ? requestAnimationFrame(floop) : 0;
+  }
+
+  /* =========================== 3D =========================== */
+  var gl3 = null, journeyEl = $("journey"), hud = $("hud");
+  var R = 5.8, GAP = 6, Z0 = -8;
+  function zDoor(n) { return Z0 - (n - 1) * GAP; }
+  function angOf(n) { return (n - 1) * 1.15; }
+
+  var VERT = "varying vec3 vP; varying vec3 vN; varying vec3 vV; varying float vD;" +
+    "void main(){ vP=position; vN=normalMatrix*normal; vec4 mv=modelViewMatrix*vec4(position,1.); vV=-mv.xyz; vD=-mv.z; gl_Position=projectionMatrix*mv; }";
+  var FRAG_GIFT = "uniform vec3 uColor; uniform vec3 uRibbon; uniform vec3 uHalf; uniform vec3 uFog; uniform float uTime; uniform float uDim; uniform float uGlow;" +
+    "varying vec3 vP; varying vec3 vN; varying vec3 vV; varying float vD;" +
+    "void main(){ vec3 p=vP/uHalf; float rib=min(step(abs(vP.x),.2)+step(abs(vP.z),.2),1.);" +
+    "vec3 base=mix(uColor,uRibbon,rib); vec3 n=normalize(vN); vec3 L=normalize(vec3(.5,.9,.6));" +
+    "float dif=.42+.58*max(dot(n,L),0.); float fr=pow(1.-max(dot(n,normalize(vV)),0.),2.4);" +
+    "vec3 a=abs(p); float m1=max(a.x,max(a.y,a.z)); float m3=min(a.x,min(a.y,a.z)); float m2=a.x+a.y+a.z-m1-m3; float edge=smoothstep(.88,.99,m2);" +
+    "vec3 col=base*dif; col+=edge*.28; col+=fr*mix(uColor,vec3(1.),.4)*.55;" +
+    "float pulse=.5+.5*sin(uTime*3.2); col+=uGlow*(.25+.55*pulse)*mix(uColor,vec3(1.),.5);" +
+    "float lum=dot(col,vec3(.299,.587,.114)); col=mix(col,vec3(lum),uDim*.5)*(1.-uDim*.38);" +
+    "col+=uDim*.1*smoothstep(.96,1.,sin((vP.x+vP.y*1.3+vP.z)*3.-uTime*1.6));" +
+    "col=mix(col,uFog,smoothstep(45.,130.,vD)); gl_FragColor=vec4(col,1.); }";
+  var FRAG_COAL = "uniform vec3 uFog; uniform float uTime; uniform float uHeat;" +
+    "varying vec3 vP; varying vec3 vN; varying vec3 vV; varying float vD;" +
+    "void main(){ vec3 n=normalize(vN); vec3 L=normalize(vec3(.4,.8,.5)); float dif=.25+.75*max(dot(n,L),0.);" +
+    "vec3 base=vec3(.09,.085,.11)*(.6+dif*1.4);" +
+    "float v=abs(sin(vP.x*5.+sin(vP.y*4.+vP.z*2.)*1.6)+sin(vP.y*6.-vP.z*3.)*.8); float vein=smoothstep(.22,.0,v);" +
+    "float pulse=.6+.4*sin(uTime*2.+vP.x*3.); vec3 ember=mix(vec3(1.,.28,.04),vec3(1.,.8,.25),vein*pulse);" +
+    "vec3 col=base+ember*vein*(.8+.8*pulse)*uHeat; float fr=pow(1.-max(dot(n,normalize(vV)),0.),3.); col+=vec3(1.,.35,.08)*fr*.25*uHeat;" +
+    "col=mix(col,uFog,smoothstep(45.,130.,vD)); gl_FragColor=vec4(col,1.); }";
+
+  function init3D() {
+    if (typeof THREE === "undefined") return null;
+    var canvas = $("gl"), renderer;
+    try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: "high-performance" }); } catch (e) { return null; }
+    var small = innerWidth < 700;
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, small ? 1.5 : 2));
+    renderer.setClearColor(0x0d1222, 1);
+    var scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x0d1222, 40, 140);
+    var camera = new THREE.PerspectiveCamera(58, 1, .1, 400);
+    var timeU = { value: 0 }, FOG = new THREE.Color(0x0d1222);
+
+    function glowTex() { var c = document.createElement("canvas"); c.width = c.height = 128; var x = c.getContext("2d"), g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(.25, "rgba(255,255,255,.45)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); }
+    function beamTex() { var c = document.createElement("canvas"); c.width = 64; c.height = 256; var x = c.getContext("2d"), g = x.createLinearGradient(0, 256, 0, 0); g.addColorStop(0, "rgba(255,255,255,.9)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 256); var h = x.createLinearGradient(0, 0, 64, 0); h.addColorStop(0, "rgba(0,0,0,1)"); h.addColorStop(.5, "rgba(0,0,0,0)"); h.addColorStop(1, "rgba(0,0,0,1)"); x.globalCompositeOperation = "destination-out"; x.fillStyle = h; x.fillRect(0, 0, 64, 256); return new THREE.CanvasTexture(c); }
+    function smokeTex() { var c = document.createElement("canvas"); c.width = c.height = 64; var x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, "rgba(255,255,255,.9)"); g.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); }
+    var GT = glowTex(), BT = beamTex(), SMT = smokeTex();
+
+    function giftMat(col, half) { return new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG_GIFT, uniforms: { uColor: { value: new THREE.Color(col) }, uRibbon: { value: new THREE.Color(0xffffff) }, uHalf: { value: new THREE.Vector3(half[0], half[1], half[2]) }, uFog: { value: FOG }, uTime: timeU, uDim: { value: 1 }, uGlow: { value: 0 } } }); }
+    var coalMat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG_COAL, uniforms: { uFog: { value: FOG }, uTime: timeU, uHeat: { value: 1 } } });
+    function lump(seed) {
+      var g = new THREE.IcosahedronGeometry(1, 1), pos = g.attributes.position, v = new THREE.Vector3();
+      for (var i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); var d = 1 + .28 * Math.sin(v.x * 3.1 + seed) * Math.cos(v.y * 2.7 + seed * 1.3) + .18 * Math.sin(v.z * 4 + seed); v.multiplyScalar(d); v.y *= .8; pos.setXYZ(i, v.x, v.y, v.z); }
+      g.computeVertexNormals(); return g;
+    }
+    var lumps = [lump(1), lump(2.4), lump(4.1), lump(5.7)];
+    var spriteMat = function (map, col, op, add) { return new THREE.SpriteMaterial({ map: map, color: col, transparent: true, opacity: op, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }); };
+
+    var D3 = [], pickMeshes = [];
+    var bodyGeo = new THREE.BoxGeometry(2, 1.6, 2), lidGeo = new THREE.BoxGeometry(2.25, .5, 2.25), torGeo = new THREE.TorusGeometry(.42, .12, 8, 20), pickGeo = new THREE.SphereGeometry(2.6, 8, 6), pickMat = new THREE.MeshBasicMaterial({ visible: false });
+    var beamGeo = new THREE.PlaneGeometry(2.4, 10);
+
+    for (var n = 1; n <= TOTAL; n++) {
+      var col = HEX[colorIdx(n)], g = new THREE.Group(), a = angOf(n);
+      g.position.set(Math.cos(a) * R, Math.sin(a) * R, zDoor(n));
+      var spin = new THREE.Group(); g.add(spin);
+      var gift = new THREE.Group(); spin.add(gift);
+      var body = new THREE.Mesh(bodyGeo, giftMat(col, [1, .8, 1])); body.position.y = -.2; gift.add(body);
+      var lid = new THREE.Group(); lid.position.y = .85; gift.add(lid);
+      var lidMesh = new THREE.Mesh(lidGeo, giftMat(col, [1.125, .25, 1.125])); lid.add(lidMesh);
+      var bowMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      var b1 = new THREE.Mesh(torGeo, bowMat); b1.position.set(.42, .5, 0); b1.rotation.set(0, 0, .9); lid.add(b1);
+      var b2 = new THREE.Mesh(torGeo, bowMat); b2.position.set(-.42, .5, 0); b2.rotation.set(0, 0, -.9); lid.add(b2);
+      var coal = new THREE.Group(); coal.visible = false; spin.add(coal);
+      [[0, -.2, 0, 1.1], [.95, -.6, .3, .62], [-.8, -.55, .5, .55], [.1, .55, -.4, .62]].forEach(function (c4, i) { var m = new THREE.Mesh(lumps[i], coalMat); m.position.set(c4[0], c4[1], c4[2]); m.scale.setScalar(c4[3]); m.rotation.set(i, i * 2, 0); coal.add(m); });
+      var smoke = [], sparks = [];
+      for (var q = 0; q < 5; q++) { var sm = new THREE.Sprite(spriteMat(SMT, 0x8a8798, 0, false)); sm.userData.ph = q / 5; coal.add(sm); smoke.push(sm); }
+      for (var q2 = 0; q2 < 4; q2++) { var sk = new THREE.Sprite(spriteMat(GT, 0xff7a22, 0, true)); sk.userData.ph = q2 / 4 + .1; coal.add(sk); sparks.push(sk); }
+      var halo = new THREE.Sprite(spriteMat(GT, col, .0, true)); halo.scale.setScalar(9); g.add(halo);
+      var beams = [0, 1].map(function (i) { var m = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ map: BT, color: 0xffe9a8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })); m.position.y = 6; m.rotation.y = i * Math.PI / 2; gift.add(m); return m; });
+      var lblC = document.createElement("canvas"); lblC.width = 160; lblC.height = 96; var lblT = new THREE.CanvasTexture(lblC);
+      var lbl = new THREE.Sprite(new THREE.SpriteMaterial({ map: lblT, transparent: true, depthWrite: false })); lbl.scale.set(2.5, 1.5, 1); lbl.position.y = 2.7; g.add(lbl);
+      var pick = new THREE.Mesh(pickGeo, pickMat); pick.userData.n = n; g.add(pick); pickMeshes.push(pick);
+      g.rotation.z = 0;
+      scene.add(g);
+      D3[n] = { n: n, g: g, spin: spin, gift: gift, coal: coal, body: body, lidMesh: lidMesh, lid: lid, bowMat: bowMat, halo: halo, beams: beams, lbl: lbl, lblC: lblC, lblT: lblT, smoke: smoke, sparks: sparks, lidT: 0, lidA: 0, scale: 1, state: "", col: col };
+    }
+
+    /* garland of lights */
+    var pts = []; pts.push(new THREE.Vector3(0, 0, 6)); for (n = 1; n <= TOTAL; n++) pts.push(D3[n].g.position.clone().multiplyScalar(1)); pts[0].set(Math.cos(angOf(1) - .6) * 3, Math.sin(angOf(1) - .6) * 3, 6);
+    var curve = new THREE.CatmullRomCurve3(pts, false, "centripetal"), TS = 28 * 26, RS = 6;
+    var tube = new THREE.TubeGeometry(curve, TS, .07, RS, false), cols = new Float32Array(tube.attributes.position.count * 3);
+    tube.setAttribute("color", new THREE.BufferAttribute(cols, 3));
+    var garland = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: .95 })); scene.add(garland);
+
+    /* gates + finale */
+    var gates = [];
+    [1, 8, 15, 22].forEach(function (nn, i) {
+      var r = new THREE.Mesh(new THREE.TorusGeometry(11.5, .07, 8, 96), new THREE.MeshBasicMaterial({ color: new THREE.Color(HEX[(i * 2 + 1) % 6]), transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false }));
+      r.position.z = zDoor(nn) + 4; scene.add(r); gates.push(r);
+      var r2 = r.clone(); r2.scale.setScalar(.82); r2.material = r.material.clone(); r2.material.opacity = .25; scene.add(r2); gates.push(r2);
+    });
+    var fin = new THREE.Group(); fin.position.z = zDoor(TOTAL) - 16; scene.add(fin);
+    [4, 6.2, 8.6].forEach(function (rr, i) { var m = new THREE.Mesh(new THREE.TorusGeometry(rr, .09, 8, 72), new THREE.MeshBasicMaterial({ color: [0xffc83d, 0xff8ad0, 0x5bb5ff][i], transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false })); m.rotation.x = i * .5; fin.add(m); });
+    var fg = new THREE.Sprite(spriteMat(GT, 0xffc83d, .9, true)); fg.scale.setScalar(26); fin.add(fg);
+
+    /* stardust */
+    var N = small ? 900 : 2000, sp3 = new Float32Array(N * 3), sc = new Float32Array(N * 3), tc = new THREE.Color();
+    for (var i = 0; i < N; i++) { var rr = 2 + Math.random() * 26, aa = Math.random() * 6.283; sp3[i * 3] = Math.cos(aa) * rr; sp3[i * 3 + 1] = Math.sin(aa) * rr; sp3[i * 3 + 2] = 44 - Math.random() * 250; tc.set(HEX[i % 6]).lerp(new THREE.Color(0xffffff), .4); sc[i * 3] = tc.r; sc[i * 3 + 1] = tc.g; sc[i * 3 + 2] = tc.b; }
+    var sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.BufferAttribute(sp3, 3)); sg.setAttribute("color", new THREE.BufferAttribute(sc, 3));
+    var dust = new THREE.Points(sg, new THREE.PointsMaterial({ size: .17, vertexColors: true, transparent: true, opacity: .85, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true })); scene.add(dust);
+
+    /* state -> visuals */
+    var tmpA = new THREE.Color(), tmpB = new THREE.Color(), CANDY = HEX.map(function (h) { return new THREE.Color(h); });
+    function garlandColor(s, u, out) {
+      if (s === "gift") { var f = (u * 6) % 6, i0 = Math.floor(f); return out.copy(CANDY[i0 % 6]).lerp(CANDY[(i0 + 1) % 6], f - i0).multiplyScalar(1.1); }
+      if (s === "coal") return out.setRGB(.16, .06, .04);
+      if (s === "waiting") return out.setRGB(1, .72, .2);
+      return out.setRGB(.2, .25, .45);
+    }
+    function paintGarland() {
+      var per = RS + 1, c = tube.attributes.color;
+      for (var s = 0; s <= TS; s++) {
+        var u = s / TS, k = u * (TOTAL), idx = clamp(k, 1, TOTAL), i0 = Math.floor(idx), i1 = Math.min(TOTAL, i0 + 1), fr = idx - i0;
+        garlandColor(ST[i0], u * 4, tmpA); garlandColor(ST[i1], u * 4, tmpB); tmpA.lerp(tmpB, clamp((fr - .3) / .4, 0, 1));
+        for (var r = 0; r < per; r++) c.setXYZ(s * per + r, tmpA.r, tmpA.g, tmpA.b);
+      }
+      c.needsUpdate = true;
+    }
+    function drawLabel(d, s) {
+      var x = d.lblC.getContext("2d"); x.clearRect(0, 0, 160, 96);
+      x.font = "800 64px 'Bricolage Grotesque', 'Trebuchet MS', sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+      x.lineWidth = 8; x.strokeStyle = "rgba(13,18,34,.85)"; x.strokeText(String(d.n), 80, 50);
+      x.fillStyle = s === "gift" ? "#ffe28a" : s === "coal" ? "#ff8a3a" : s === "waiting" ? "#ffffff" : "rgba(190,200,240,.75)"; x.fillText(String(d.n), 80, 50);
+      d.lblT.needsUpdate = true;
+    }
+    function applyStates() {
+      for (var n = 1; n <= TOTAL; n++) {
+        var d = D3[n], s = ST[n], e = entryOf(n);
+        d.state = s; d.gift.visible = s !== "coal"; d.coal.visible = s === "coal";
+        var mats = [d.body.material, d.lidMesh.material];
+        mats.forEach(function (m) {
+          m.uniforms.uDim.value = s === "sealed" ? 1 : s === "waiting" ? .15 : 0;
+          m.uniforms.uGlow.value = s === "gift" ? .9 : s === "waiting" ? 1 : 0;
+          m.uniforms.uRibbon.value.set(s === "gift" ? 0xffe28a : 0xffffff);
+        });
+        d.bowMat.color.set(s === "gift" ? 0xffe28a : s === "sealed" ? 0x8a93b8 : 0xffffff);
+        d.lidT = s === "gift" ? 1 : 0;
+        d.halo.material.color.set(s === "coal" ? 0xff5a14 : d.col);
+        d.halo.material.opacity = s === "gift" ? .55 : s === "waiting" ? .5 : s === "coal" ? .4 : .08;
+        d.halo.scale.setScalar(s === "coal" ? 7 : 9);
+        d.beams.forEach(function (b) { b.material.opacity = s === "gift" ? .5 : 0; });
+        drawLabel(d, s);
+      }
+      paintGarland();
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { for (var n = 1; n <= TOTAL; n++) drawLabel(D3[n], D3[n].state); });
+
+    /* camera path & loop */
+    var zStart = 20, zEnd = zDoor(TOTAL) + 12, maxScroll = 1, P = { t: 0, c: 0 }, mouse = { x: 0, y: 0, sx: 0, sy: 0, ndc: new THREE.Vector2(9, 9), in: false }, hoverN = 0, focusN = 1, lean = { x: 0, y: 0 }, roll = 0;
+    var ray = new THREE.Raycaster(), tip = $("tip");
+    function layout() {
+      var w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w / h < .8 ? 74 : 58; camera.updateProjectionMatrix();
+      maxScroll = Math.max(1, journeyEl.offsetTop + journeyEl.offsetHeight - h);
+    }
+    layout(); addEventListener("resize", layout); addEventListener("load", layout);
+    function scrollToDoor(n) {
+      var camZ = zDoor(n) + 10, p = (zStart - camZ) / (zStart - zEnd);
+      scrollTo({ top: clamp(p, 0, 1) * maxScroll, behavior: reduce ? "auto" : "smooth" });
+    }
+    addEventListener("pointermove", function (e) { mouse.x = e.clientX / innerWidth * 2 - 1; mouse.y = -(e.clientY / innerHeight * 2 - 1); mouse.ndc.set(mouse.x, mouse.y); mouse.cx = e.clientX; mouse.cy = e.clientY; mouse.in = true; });
+    function inFlight() { return scrollY < maxScroll + innerHeight * .3; }
+    function overUI(t) { return t && t.closest && t.closest("button,a,.hud-card,.rail,.scrim,.topbar"); }
+    var downAt = null;
+    addEventListener("pointerdown", function (e) { downAt = { x: e.clientX, y: e.clientY }; });
+    addEventListener("click", function (e) {
+      if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 8) return;
+      if (!inFlight() || overUI(e.target)) return;
+      if (hoverN) openDoor(hoverN);
+    });
+
+    var last = 0, hudN = 0, hudSig = "";
+    function loop(t) {
+      var dt = Math.min(.05, (t - last) / 1000 || 0); last = t; timeU.value = t / 1000;
+      var tt = t / 1000;
+      P.t = clamp(scrollY / maxScroll, 0, 1); P.c += (P.t - P.c) * (reduce ? 1 : 1 - Math.pow(.002, dt));
+      var p = P.c, camZ = zStart + (zEnd - zStart) * p;
+      mouse.sx += (mouse.x - mouse.sx) * .06; mouse.sy += (mouse.y - mouse.sy) * .06;
+      focusN = clamp(Math.round((-8 - (camZ - 10)) / GAP) + 1, 1, TOTAL);
+      var fa = angOf(focusN), lw = clamp((p - .02) / .1, 0, 1);
+      lean.x += (Math.cos(fa) * 1.5 * lw - lean.x) * .04; lean.y += (Math.sin(fa) * 1.5 * lw - lean.y) * .04;
+      camera.position.set(lean.x + mouse.sx * 1.2 + Math.sin(tt * .25) * .5, lean.y + mouse.sy * .8 + Math.cos(tt * .21) * .35, camZ);
+      camera.up.set(0, 1, 0);
+      camera.lookAt(lean.x * .6 + mouse.sx * 3, lean.y * .6 + mouse.sy * 2, camZ - 16);
+      var rt = Math.sin(fa) * .06 * lw - mouse.sx * .03; roll += (rt - roll) * .05; camera.rotateZ(roll);
+
+      /* hover */
+      hoverN = 0;
+      if (mouse.in && inFlight() && !reduce || mouse.in && inFlight()) {
+        ray.setFromCamera(mouse.ndc, camera); var hit = ray.intersectObjects(pickMeshes, false);
+        if (hit.length) hoverN = hit[0].object.userData.n;
+      }
+      var tgt = document.elementFromPoint ? document.elementFromPoint(mouse.cx || 0, mouse.cy || 0) : null;
+      if (hoverN && overUI(tgt)) hoverN = 0;
+      if (hoverN) { tip.textContent = "Day " + hoverN + " · " + ({ sealed: "Sealed", waiting: "Waiting", gift: "Shipped", coal: "Coal" })[ST[hoverN]]; tip.style.left = mouse.cx + "px"; tip.style.top = mouse.cy + "px"; tip.classList.add("on"); } else tip.classList.remove("on");
+      document.body.style.cursor = hoverN ? "pointer" : "";
+      ringEl.classList.toggle("big", !!hoverN || ringHot);
+
+      for (var n = 1; n <= TOTAL; n++) {
+        var d = D3[n], s = d.state, rate = s === "sealed" ? .22 : s === "coal" ? .1 : .5;
+        d.spin.rotation.y = tt * rate + n; d.spin.rotation.x = Math.sin(tt * .6 + n) * .12;
+        d.spin.position.y = Math.sin(tt * .9 + n * 1.7) * .3;
+        var ts = n === hoverN ? 1.3 : n === focusN ? 1.18 : 1; d.scale += (ts - d.scale) * .12; d.g.scale.setScalar(d.scale);
+        d.lid.position.y += ((d.lidT ? 2.7 : .85) - d.lid.position.y) * .06;
+        d.lid.rotation.z += ((d.lidT ? .75 : 0) - d.lid.rotation.z) * .06; d.lid.rotation.x += ((d.lidT ? .35 : 0) - d.lid.rotation.x) * .06;
+        d.halo.material.opacity += ((s === "gift" ? .55 : s === "waiting" ? .35 + .2 * Math.sin(tt * 3) : s === "coal" ? .32 + .1 * Math.sin(tt * 2 + n) : .08) - d.halo.material.opacity) * .1;
+        if (s === "coal") {
+          d.smoke.forEach(function (sm) { var u = (tt * .3 + sm.userData.ph) % 1; sm.position.set(Math.sin(tt + sm.userData.ph * 6) * .5 * u, .8 + u * 5, 0); sm.scale.setScalar(1.3 + u * 3.2); sm.material.opacity = .34 * (1 - u) * Math.min(1, u * 8); });
+          d.sparks.forEach(function (sk) { var u = (tt * .55 + sk.userData.ph) % 1; sk.position.set(Math.sin(tt * 2 + sk.userData.ph * 9) * .7 * u, .3 + u * 4, Math.cos(tt * 1.7 + sk.userData.ph * 5) * .5 * u); sk.scale.setScalar(.35 * (1 - u) + .05); sk.material.opacity = 1 - u; });
+        }
+        if (s === "gift") d.beams.forEach(function (b, i) { b.material.opacity = .4 + .15 * Math.sin(tt * 2 + n + i); });
+      }
+      dust.rotation.z = tt * .01; dust.position.z = (Math.sin(tt * .1)) * 2;
+      gates.forEach(function (g, i) { g.rotation.z = tt * (.05 + i * .01) * (i % 2 ? -1 : 1); });
+      fin.children.forEach(function (c, i) { if (i < 3) c.rotation.z = tt * (.2 + i * .1) * (i % 2 ? -1 : 1); });
+      renderer.render(scene, camera);
+
+      /* canvas fade after flight */
+      var fade = clamp((scrollY - maxScroll) / (innerHeight * .7), 0, 1); canvas.style.opacity = (1 - fade * .88).toFixed(3);
+      /* hero text parallax */
+      var hb = $("heroBody"), hk = clamp(scrollY / (innerHeight * .7), 0, 1); hb.style.opacity = (1 - hk).toFixed(3); hb.style.transform = "translateY(" + (-scrollY * .35).toFixed(1) + "px) scale(" + (1 - hk * .06).toFixed(3) + ")";
+      /* hud */
+      var show = scrollY > innerHeight * .55 && scrollY < maxScroll + innerHeight * .1; hud.classList.toggle("on", show);
+      var sig = focusN + ST.join(",") + (demo ? "d" : ""); if (sig !== hudSig) { hudSig = sig; updateHud(focusN); }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    return { applyStates: applyStates, scrollToDoor: scrollToDoor, ok: true };
+  }
+
+  /* ----- HUD ----- */
+  var rail = $("rail"), railBtns = [];
+  for (var rn = 1; rn <= TOTAL; rn++) { (function (n) { var b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", "Fly to day " + n); b.addEventListener("click", function () { if (gl3) gl3.scrollToDoor(n); }); rail.appendChild(b); railBtns[n] = b; })(rn); }
+  var hudFocus = 1;
+  function updateHud(n) {
+    hudFocus = n; var s = ST[n], e = entryOf(n), wk = Math.ceil(n / 7);
+    var colr = s === "gift" ? "var(--mint)" : s === "coal" ? "var(--ember)" : s === "waiting" ? "var(--sun)" : "#7f8bc4";
+    $("hudCard").style.setProperty("--hc", colr);
+    $("hudNum").textContent = String(n).padStart(2, "0");
+    $("hudChip").textContent = { gift: "Shipped", coal: "Coal", waiting: "Waiting for the post", sealed: "Sealed" }[s];
+    $("hudDate").textContent = dayLabel(n, { weekday: "long", month: "long", day: "numeric" });
+    $("hudTitle").textContent = s === "gift" ? e.title : s === "coal" ? "Nothing shipped." : s === "waiting" ? "Today's gift is still wrapped." : "Sealed until the window opens.";
+    $("hudSub").textContent = s === "gift" ? (KIND[e.kind] || "Ship") + " · tap the box or open it" : s === "coal" ? "The window closed and the garland went dark." : s === "waiting" ? "It turns to coal at midnight Pacific." : "A post that day unwraps it.";
+    $("hudBtn").textContent = { gift: "See the ship", coal: "See the coal", waiting: "Check the door", sealed: "Peek at the door" }[s];
+    $("hudWeek").innerHTML = "Week " + wk + "<small>" + dayLabel(wk * 7 - 6) + " to " + dayLabel(wk * 7) + "</small>";
+    railBtns.forEach(function (b, i) { if (!b) return; var st = ST[i]; b.style.setProperty("--rc", st === "gift" ? "#3ddba8" : st === "coal" ? "#ff6a1a" : st === "waiting" ? "#ffc83d" : "#3a4478"); b.classList.toggle("cur", i === n); });
+  }
+  $("hudBtn").addEventListener("click", function () { openDoor(hudFocus); });
+
+  /* ----- cursor ring (fine pointers) ----- */
+  var ringEl = $("ring"), ringHot = false;
+  if (window.matchMedia && matchMedia("(pointer: fine)").matches) {
+    addEventListener("pointermove", function (e) { ringEl.classList.add("on"); ringEl.style.transform = "translate(" + e.clientX + "px," + e.clientY + "px)"; ringHot = !!(e.target.closest && e.target.closest("a,button,.door")); });
+  }
+
+  /* ----- refresh ----- */
+  function refresh() { recompute(); render2D(); ledger(); tick(); if (gl3) gl3.applyStates(); hudSigReset(); }
+  function hudSigReset() { updateHud(hudFocus); }
+  $("demoBtn").addEventListener("click", function () { demo = !demo; $("demoFlag").hidden = !demo; this.textContent = demo ? "Back to live data" : "Preview with sample data"; refresh(); });
+
+  gl3 = init3D();
+  if (!gl3) { journeyEl.style.display = "none"; document.querySelector(".cue").style.display = "none"; }
+  refresh(); setInterval(tick, 1000); setInterval(refresh, 30000);
+})();
+</script>
+
+</body>
+</html>

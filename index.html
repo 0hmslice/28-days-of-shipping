@@ -201,6 +201,15 @@ h1 .sm { font-size: .3em; letter-spacing: -.01em; padding-inline: .2em; vertical
 .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--c); color: #1b1230; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
 .sheet h3 { font-family: var(--font-display); font-size: clamp(26px, 5vw, 36px); line-height: 1.05; letter-spacing: -.015em; margin: 0 0 10px; text-wrap: balance; }
 .sheet p { margin: 0 0 14px; color: #c9d0ee; }
+.sheet .parts { display: grid; gap: 10px; margin: 4px 0 16px; padding: 0; list-style: none; }
+.part { --pc: var(--sun); display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.035); border: 1px solid var(--line); border-left: 4px solid var(--pc); opacity: 0; transform: translateY(10px); animation: rise .5s cubic-bezier(.2,1.1,.3,1) forwards; transition: background .2s, transform .2s; }
+.part:hover { background: rgba(255,255,255,.07); transform: translateY(-2px); }
+.part .pn { grid-row: span 2; align-self: start; font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: #1b1230; background: var(--pc); border-radius: 999px; padding: 3px 9px; letter-spacing: .04em; }
+.part b { font-family: var(--font-display); font-size: 17px; line-height: 1.2; color: var(--snow); }
+.part span.pt { grid-column: 2; font-size: 14px; line-height: 1.45; color: #c9d0ee; }
+.part a { grid-column: 2; justify-self: start; margin-top: 4px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .04em; text-decoration: none; color: var(--pc); border: 1px solid var(--pc); border-radius: 999px; padding: 2px 10px; }
+.part a:hover { background: var(--pc); color: #1b1230; }
+@media (prefers-reduced-motion: reduce) { .part { animation: none; opacity: 1; transform: none; } }
 .sheet .src { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; }
 .close { position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #0b1026; color: var(--snow); font-size: 20px; cursor: pointer; }
 .close:hover { background: var(--line); }
@@ -354,6 +363,7 @@ h1 .sm { font-size: .3em; letter-spacing: -.01em; padding-inline: .2em; vertical
     <div class="meta"><span class="pill" id="sKind"></span><span id="sDate"></span></div>
     <h3 id="sTitle"></h3>
     <p id="sBody"></p>
+    <ol class="parts" id="sParts" hidden></ol>
     <a class="src" id="sSrc" target="_blank" rel="noopener" hidden></a>
     <div class="sample" id="sSample" hidden>Sample data. This is not real news.</div>
   </div>
@@ -372,7 +382,7 @@ var CALENDAR = {
   entries: {
     /* "1": { kind: "improvement", title: "...", summary: "...", source: { label: "@thsottiaux on X", url: "https://x.com/..." } } */
     "1": { kind: "improvement", title: "Default speed is ~50% faster", summary: "Default speed goes from about 30 to 50 tokens per second on GPT-6 Astra and GPT-6.1 Sol, through the subscription across every product and partner using Sign in with ChatGPT. Tibo adds it has the most optimized tokenizer out there, and the models need fewer tokens to get things done. No changes needed.", source: { label: "@thsottiaux on X", url: "https://x.com/thsottiaux/status/2107158998495748264" } },
-    "2": { kind: "feature", title: "Day 2 quadruple drop: Auto-review, API tiers, meetings, Decisions", summary: "2.1 Auto-review is free for ChatGPT sign-ins: a second agent vets actions, no plan usage. 2.2 Five API tiers become three (Build, Launch, Grow). 2.3 ChatGPT's Meetings plugin takes notes to hand to Codex. 2.4 Decisions API enters public beta, up to 10x faster than GPT-6 Luna.", source: { label: "@thsottiaux on X: Day 2 roundup (parts: 2.1 thsottiaux/status/2107368734981517634, 2.2 @OpenAIDevs/status/2107539647392096384, 2.3 thsottiaux/status/2107573405553938664, 2.4 thsottiaux/status/2107574912349303197)", url: "https://x.com/thsottiaux/status/2107575657014468879" } }
+    "2": { kind: "feature", title: "Day 2 quadruple drop: Auto-review, API tiers, meetings, Decisions", summary: "Four ships in one day.", parts: [{"n": "2.1", "title": "Auto-review is free", "text": "A second agent vets the main agent's actions. Free for ChatGPT sign-ins and uses no plan usage. Settings > Permissions.", "label": "@thsottiaux", "url": "https://x.com/thsottiaux/status/2107368734981517634"}, {"n": "2.2", "title": "Simpler API tiers", "text": "Five paid usage tiers become three: Build, Launch and Grow, with higher limits at Grow.", "label": "@OpenAIDevs", "url": "https://x.com/OpenAIDevs/status/2107539647392096384"}, {"n": "2.3", "title": "Meeting notes, integrated", "text": "ChatGPT's Meetings plugin takes notes and saves a summary you can load into Codex.", "label": "@thsottiaux", "url": "https://x.com/thsottiaux/status/2107573405553938664"}, {"n": "2.4", "title": "Decisions API is live", "text": "Public beta for developers: pick the right model, tool or action in near real time, up to 10x faster than GPT-6 Luna.", "label": "@thsottiaux", "url": "https://x.com/thsottiaux/status/2107574912349303197"}], source: { label: "@thsottiaux on X: Day 2 roundup", url: "https://x.com/thsottiaux/status/2107575657014468879" } }
   }
 };
 /* ---------------------------------------------------------------------------------------- */
@@ -524,7 +534,7 @@ var CALENDAR = {
   function human(ms) { var s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d > 0 ? d + " day" + (d > 1 ? "s" : "") + " " + h + " hr" : h + " hr " + m + " min"; }
   function openDoor(n) {
     var s = ST[n], e = entryOf(n), date = dayLabel(n, { weekday: "long", month: "long", day: "numeric" }), o = { num: n, color: "c" + colorIdx(n), date: date, sample: demo, confetti: false, coal: false };
-    if (s === "gift") { o.kind = KIND[e.kind] || "Ship"; o.title = e.title; o.body = e.summary; o.src = e.source; o.confetti = true; }
+    if (s === "gift") { o.kind = KIND[e.kind] || "Ship"; o.title = e.title; o.body = e.summary; o.parts = e.parts; o.src = e.source; o.confetti = true; }
     else if (s === "coal") { o.coal = true; o.kind = "No ship"; o.title = "Coal."; o.body = COALLINES[n % COALLINES.length] + " The window closed " + dayLabel(n, { month: "short", day: "numeric" }) + " at 11:59 pm Pacific with no post."; o.smoke = true; }
     else if (s === "waiting") { o.kind = "Waiting"; o.title = "Still wrapped"; o.body = "Nothing posted yet today. This door unwraps the moment the ship lands, and it turns to coal at midnight Pacific if it doesn't."; }
     else { o.kind = "Sealed"; o.title = "Not yet"; o.body = "This window opens in " + human(dayStart(n) - Date.now()) + ". A post that day unwraps the door."; }
@@ -532,6 +542,15 @@ var CALENDAR = {
     sheet.className = "sheet " + o.color + (o.coal ? " coal" : "");
     if (o.coal) sheet.style.setProperty("--c", "#ff6a1a"); else sheet.style.removeProperty("--c");
     $("sNum").textContent = o.num; $("sKind").textContent = o.kind; $("sDate").textContent = o.date; $("sTitle").textContent = o.title; $("sBody").textContent = o.body;
+    var pl = $("sParts"); pl.textContent = ""; pl.hidden = !(o.parts && o.parts.length);
+    if (o.parts) o.parts.forEach(function (p, i) {
+      var li = document.createElement("li"); li.className = "part"; li.style.setProperty("--pc", HEX[(i + 1) % HEX.length]); li.style.animationDelay = (reduce ? 0 : 150 + i * 90) + "ms";
+      var n = document.createElement("span"); n.className = "pn"; n.textContent = p.n; li.appendChild(n);
+      var t = document.createElement("b"); t.textContent = p.title; li.appendChild(t);
+      var d = document.createElement("span"); d.className = "pt"; d.textContent = p.text; li.appendChild(d);
+      if (p.url) { var a2 = document.createElement("a"); a2.href = p.url; a2.target = "_blank"; a2.rel = "noopener"; a2.textContent = (p.label || "Post") + " \u2197"; li.appendChild(a2); }
+      pl.appendChild(li);
+    });
     var a = $("sSrc"); if (o.src) { a.hidden = false; a.href = o.src.url; a.textContent = (o.src.label || "Source") + " ↗"; } else a.hidden = true;
     $("sSample").hidden = !o.sample;
     scrim.classList.add("on"); scrim.setAttribute("aria-hidden", "false"); sheet.focus();

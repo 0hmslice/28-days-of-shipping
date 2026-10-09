@@ -191,7 +191,7 @@ h1 .sm { font-size: .3em; letter-spacing: -.01em; padding-inline: .2em; vertical
 /* ---------- modal ---------- */
 .scrim { position: fixed; inset: 0; z-index: 90; background: rgba(6,9,22,.86); display: grid; place-items: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity .25s; }
 .scrim.on { opacity: 1; pointer-events: auto; }
-body:has(.scrim.on) #hud, body:has(.scrim.on) #flyHint { visibility: hidden; }
+html.mo #hud, html.mo #flyHint { visibility: hidden; }
 .sheet { --c: var(--sun); width: min(560px, 100%); max-height: calc(100% - 16px); overflow: auto; background: var(--ink-2); border: 1px solid var(--line); border-radius: 28px; padding: 26px; position: relative; transform: translateY(24px) scale(.94); transition: transform .45s cubic-bezier(.2,1.2,.3,1); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
 .scrim.on .sheet { transform: none; }
 .sheet::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 10px; background: var(--c); border-radius: 28px 28px 0 0; }
@@ -276,9 +276,9 @@ body:has(.scrim.on) #hud, body:has(.scrim.on) #flyHint { visibility: hidden; }
 /* ---------- fancier gift cards ---------- */
 .sheet { background: radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--c) 30%, transparent), transparent 62%), var(--ink-2); border-color: color-mix(in srgb, var(--c) 45%, var(--line)); box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 0 70px color-mix(in srgb, var(--c) 28%, transparent); overflow-x: hidden; padding-top: 40px; }
 .sheet::before { height: 14px; background: repeating-linear-gradient(-45deg, var(--c) 0 12px, color-mix(in srgb, var(--c) 45%, #fff) 12px 24px); }
-.sheet::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.16) 50%, transparent 62%); background-size: 260% 100%; background-position: 130% 0; }
+.sheet::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.16) 50%, transparent 62%); transform: translate3d(-110%, 0, 0); }
 .scrim.on .sheet::after { animation: shine 1.3s .25s ease-out 1 both; }
-@keyframes shine { to { background-position: -40% 0; } }
+@keyframes shine { to { transform: translate3d(110%, 0, 0); } }
 .sheet .big { font-size: 88px; text-shadow: 0 6px 0 rgba(0,0,0,.28); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 40%, #fff), var(--c)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; filter: drop-shadow(0 5px 0 rgba(0,0,0,.3)); transform-origin: 50% 80%; }
 .scrim.on .sheet .big { animation: bigpop .7s .1s cubic-bezier(.2,1.6,.3,1) both; }
 @keyframes bigpop { 0% { transform: scale(.3) rotate(-14deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
@@ -288,10 +288,10 @@ body:has(.scrim.on) #hud, body:has(.scrim.on) #flyHint { visibility: hidden; }
 .pill { box-shadow: 0 3px 0 rgba(0,0,0,.28); }
 .sheet .bow { position: absolute; top: 20px; right: 70px; width: 54px; height: 54px; pointer-events: none; filter: drop-shadow(0 4px 0 rgba(0,0,0,.3)); }
 .scrim.on .sheet .bow { animation: wiggle 3.2s 1s ease-in-out infinite; transform-origin: 50% 20%; }
-.sheet .sp { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--c); opacity: 0; pointer-events: none; }
+.sheet .sp { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 14px 3px var(--c); opacity: 0; pointer-events: none; will-change: transform, opacity; }
 .scrim.on .sheet .sp { animation: twinkle 2.6s ease-in-out infinite; }
 .sheet .s1 { top: 70px; right: 24px; } .sheet .s2 { top: 150px; right: 54px; width: 6px; height: 6px; animation-delay: .7s !important; } .sheet .s3 { top: 96px; left: 150px; width: 5px; height: 5px; animation-delay: 1.4s !important; } .sheet .s4 { top: 190px; left: 22px; width: 7px; height: 7px; animation-delay: 2s !important; }
-@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: .95; transform: scale(1.3); box-shadow: 0 0 14px 3px var(--c); } }
+@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: .95; transform: scale(1.3); } }
 .sheet .acts { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
 .sheet .acts .src { padding: 10px 18px; border-radius: 999px; background: var(--c); color: #1b1230; text-decoration: none; box-shadow: 0 4px 0 rgba(0,0,0,.35); transition: transform .1s, box-shadow .1s; }
 .sheet .acts .src:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,.35); color: #1b1230; }
@@ -389,6 +389,9 @@ body:has(.scrim.on) #hud, body:has(.scrim.on) #flyHint { visibility: hidden; }
 @keyframes gtw { to { transform: scale(1.5) rotate(25deg); opacity: .6; } }
 @media (max-width: 560px) { #gBtn, #cBtn { width: 78px; height: 78px; } #gBubble, #cBubble { max-width: 170px; font-size: 13px; } }
 @media (prefers-reduced-motion: reduce) { #cBtn, #codex.hop #cBtn svg, #codex.spin #cBtn svg, #codex.talk #cBtn .c-arm, #cBtn .cur, #gBtn, #guide.talk #gBtn .arm-r, #guide.spin #gBtn svg, #gBtn .eyes, #guide.hop #gBtn svg, #guide .stars path, #guide .tears path, #guide .zzz text { animation: none !important; } }
+/* while a card is open, freeze everything behind it so only the card animates */
+html.mo body > *:not(.scrim):not(#fx), html.mo body > *:not(.scrim):not(#fx) *, html.mo body > *:not(.scrim):not(#fx) *::before, html.mo body > *:not(.scrim):not(#fx) *::after { animation-play-state: paused !important; }
+.scrim.on .sheet { will-change: transform; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -735,12 +738,12 @@ var CALENDAR = {
       pl.appendChild(li);
     });
     var a = $("sSrc"); if (o.src) { a.hidden = false; a.href = o.src.url; a.textContent = (o.src.label || "Source") + " ↗"; } else a.hidden = true;
-    scrim.classList.add("on"); scrim.setAttribute("aria-hidden", "false"); sheet.focus();
+    document.documentElement.classList.add("mo"); scrim.classList.add("on"); scrim.setAttribute("aria-hidden", "false"); sheet.focus({ preventScroll: true });
     if (o.confetti) { burst(false); SND.win(); } else if (o.coal) { burst(true); SND.coal(); } else SND.locked();
     if (o.confetti) { say("Ooh, shipped! Open it up.", 3200, null, true); mood("cheer", 3200); hop(); } else if (o.coal) { say("Coal. We don't talk about coal.", 3600, null, true); mood("sad", 3600); }
   }
   var openN = 0;
-  function hide() { openN = 0; if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} } scrim.classList.remove("on"); scrim.setAttribute("aria-hidden", "true"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
+  function hide() { openN = 0; document.documentElement.classList.remove("mo"); if (location.hash) { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} } scrim.classList.remove("on"); scrim.setAttribute("aria-hidden", "true"); if (lastFocus) try { lastFocus.focus(); } catch (e) {} }
   $("sCopy").addEventListener("click", function () {
     var btn = this, url = location.href.split("#")[0] + "#day-" + openN;
     function done() { btn.textContent = "Link copied"; }
@@ -1021,12 +1024,13 @@ var CALENDAR = {
 
   /* ----- confetti / ash ----- */
   var fx = $("fx"), fc = fx.getContext("2d"), bits = [], fraf = 0;
-  function fxSize() { fx.width = innerWidth * devicePixelRatio; fx.height = innerHeight * devicePixelRatio; }
+  var fdpr = Math.min(devicePixelRatio || 1, 1.5);
+  function fxSize() { fx.width = innerWidth * fdpr; fx.height = innerHeight * fdpr; }
   fxSize(); addEventListener("resize", fxSize);
   function burst(ash) {
     if (reduce) return;
-    var cols = ash ? ["#ff6a1a", "#ffb04a", "#5a5a66", "#2a2833", "#ff3b0a"] : HEX, dpr = devicePixelRatio;
-    for (var i = 0; i < (ash ? 90 : 170); i++) {
+    var cols = ash ? ["#ff6a1a", "#ffb04a", "#5a5a66", "#2a2833", "#ff3b0a"] : HEX, dpr = fdpr;
+    for (var i = 0; i < (ash ? 70 : 110); i++) {
       var a = Math.random() * 6.283, v = (ash ? 2 + Math.random() * 6 : 6 + Math.random() * 13);
       bits.push({ x: fx.width / 2, y: fx.height * .4, vx: Math.cos(a) * v * dpr, vy: (Math.sin(a) * v - (ash ? 7 : 6)) * dpr, r: (3 + Math.random() * 6) * dpr, rot: Math.random() * 6, vr: (Math.random() - .5) * .4, c: cols[i % cols.length], life: 1, sq: !ash && Math.random() < .5, g: ash ? -.06 : .32 });
     }
@@ -1036,11 +1040,11 @@ var CALENDAR = {
     fc.clearRect(0, 0, fx.width, fx.height);
     bits = bits.filter(function (p) { return p.life > 0 && p.y < fx.height + 40 && p.y > -60; });
     bits.forEach(function (p) {
-      p.vy += p.g * devicePixelRatio; if (p.g < 0) p.vy *= .97; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= p.g < 0 ? .011 : .0065;
-      fc.save(); fc.translate(p.x, p.y); fc.rotate(p.rot); fc.globalAlpha = clamp(p.life * 2, 0, 1); fc.fillStyle = p.c;
+      p.vy += p.g * fdpr; if (p.g < 0) p.vy *= .97; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= p.g < 0 ? .011 : .0065;
+      var cs = Math.cos(p.rot), sn = Math.sin(p.rot); fc.setTransform(cs, sn, -sn, cs, p.x, p.y); fc.globalAlpha = clamp(p.life * 2, 0, 1); fc.fillStyle = p.c;
       if (p.sq) fc.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); else { fc.beginPath(); fc.arc(0, 0, p.r / 2.5, 0, 6.3); fc.fill(); }
-      fc.restore();
     });
+    fc.setTransform(1, 0, 0, 1, 0, 0); fc.globalAlpha = 1;
     fraf = bits.length ? requestAnimationFrame(floop) : 0;
   }
 
@@ -1077,7 +1081,7 @@ var CALENDAR = {
     var canvas = $("gl"), renderer;
     try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: "high-performance" }); } catch (e) { return null; }
     var small = innerWidth < 700;
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, small ? 1.5 : 2));
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
     renderer.setClearColor(0x0d1222, 1);
     var scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x0d1222, 40, 140);
     var camera = new THREE.PerspectiveCamera(58, 1, .1, 400);
@@ -1268,7 +1272,7 @@ var CALENDAR = {
       dust.material.size = .17 + pu * .09; dust.rotation.z = tt * .01; dust.position.z = (Math.sin(tt * .1)) * 2;
       gates.forEach(function (g, i) { g.rotation.z = tt * (.05 + i * .01) * (i % 2 ? -1 : 1); g.scale.setScalar(1 + pu * .04); });
       fin.children.forEach(function (c, i) { if (i < 3) c.rotation.z = tt * (.2 + i * .1) * (i % 2 ? -1 : 1); });
-      if (!modalOpen() || (frameN++ & 3) === 0) renderer.render(scene, camera);
+      if (!modalOpen()) renderer.render(scene, camera);
 
       /* canvas fade after flight */
       var fade = clamp((scrollY - maxScroll) / (innerHeight * .7), 0, 1); canvas.style.opacity = (1 - fade * .88).toFixed(3);

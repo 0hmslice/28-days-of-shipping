@@ -1222,9 +1222,28 @@ var CALENDAR = {
     addEventListener("pointerdown", function (e) { downAt = { x: e.clientX, y: e.clientY }; });
     addEventListener("click", function (e) {
       if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 8) return;
-      if (!inFlight() || overUI(e.target)) return;
-      if (hoverN) openDoor(hoverN);
+      var coarse = e.pointerType === "touch" || (window.matchMedia && matchMedia("(pointer: coarse)").matches);
+      if (!inFlight() || (overUI(e.target) && !(coarse && e.target.closest("#guide,#codex")))) return;
+      var n = pickAt(e.clientX, e.clientY, coarse);
+      if (n) openDoor(n);
     });
+    /* taps never fire a hover move first, so pick the door under the finger at click time (with a little slack for fingertips) */
+    var pv = new THREE.Vector3();
+    function pickAt(cx, cy, coarse) {
+      ray.setFromCamera(new THREE.Vector2(cx / innerWidth * 2 - 1, -(cy / innerHeight * 2 - 1)), camera);
+      var hit = ray.intersectObjects(pickMeshes, false);
+      if (hit.length) return hit[0].object.userData.n;
+      if (!coarse) return hoverN;
+      var best = 0, bd = 56;
+      for (var n = 1; n <= TOTAL; n++) {
+        pv.copy(D3[n].g.position).project(camera); if (pv.z >= 1) continue;
+        var d = Math.hypot((pv.x * .5 + .5) * innerWidth - cx, (-pv.y * .5 + .5) * innerHeight - cy);
+        if (d < bd) { bd = d; best = n; }
+      }
+      return best;
+    }
+    addEventListener("pointerup", function (e) { if (e.pointerType === "touch") { mouse.in = false; hoverN = 0; } });
+    addEventListener("pointercancel", function () { mouse.in = false; });
 
     var gv = new THREE.Vector3(), flyHint = $("flyHint"); function modalOpen() { return scrim.classList.contains("on"); }
     $("flySkip").addEventListener("click", function () { var nx = journeyEl.nextElementSibling; scrollTo({ top: nx ? nx.getBoundingClientRect().top + scrollY : maxScroll + innerHeight, behavior: reduce ? "auto" : "smooth" }); });
